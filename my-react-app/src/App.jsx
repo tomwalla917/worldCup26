@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import './App.css'
 import logo from '/images/wc26logo.png'
@@ -8,9 +8,31 @@ import Draft from './pages/Draft.jsx'
 
 function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [configLoaded, setConfigLoaded] = useState(false)
+
+  useEffect(() => {
+    // Wait a bit for the config widget to initialize
+    const timer = setTimeout(() => {
+      setConfigLoaded(true)
+      console.log('Config should be loaded now')
+    }, 1000)
+    
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <BrowserRouter>
+      {/* Config widget - render it directly in the DOM */}
+      <div style={{ display: 'none' }}>
+        <api-sports-widget
+          data-type="config"
+          data-key="17426b7c846ed1d1222b0e36589808d4"
+          data-sport="football"
+          data-show-logos="true"
+          data-theme="white"
+        ></api-sports-widget>
+      </div>
+
       <nav className="relative bg-gray-800/50 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10">
         <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between">
@@ -117,11 +139,15 @@ function App() {
       </nav>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg px-6 py-8 ring shadow-xl ring-gray-900/5">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/games" element={<Games />} />
-          <Route path="/draft" element={<Draft />} />
-        </Routes>
+        {configLoaded ? (
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/games" element={<Games />} />
+            <Route path="/draft" element={<Draft />} />
+          </Routes>
+        ) : (
+          <div>Loading configuration...</div>
+        )}
       </div>
     </BrowserRouter>
   )
